@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<head>
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=yes">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta name="referrer" content="no-referrer">
+    <title>Add Subtitle</title>
+    <meta name="description" content="视频资料上传">
+    <meta name="keywords" content="视频资料上传">
+    <link rel="icon" sizes="any" href="http://www.printableparadise.com/letter-stencils/printable-letter-k-stencil.png">
+</head>
+
+<style>
+    .warning {
+        margin-left: 5px;
+        color: red;
+    }
+
+    .fullContainer {
+        flex: 1;
+        margin: 0 75px;
+    }
+
+    h1 {
+        font-size: 40px;
+        width: 100%;
+        overflow-wrap: break-word;
+        word-break: break-all;
+    }
+
+    .uploadContainer {
+        display: flex;
+    }
+
+    .videoTable {
+        width: 60%;
+    }
+
+    .video {
+        max-height: 450px;
+        height: 100%;
+        width: 100%;
+    }
+
+    .subtitleTable {
+        width: 40%;
+        margin-left: 40px;
+    }
+
+    .font {
+        font-size: 20px;
+    }
+
+    .list {
+        height: 25px;
+        width: 100%;
+        max-width: 200px;
+        border: 0;
+        border-radius: 5px;
+        padding-left: 7px;
+    }
+
+    .input {
+        margin-top: 5px;
+    }
+
+    .button {
+        margin-top: 15px;
+        height: 35px;
+        width: 130px;
+        border: 0;
+        border-radius: 20px;
+        background: #00E44C;
+        cursor: pointer;
+        transition: background .2s ease-in-out;
+        font-weight: bold;
+    }
+
+    .button:hover {
+        background: #00C040;
+    }
+
+    .select {
+        margin: auto;
+        margin-left: 10px;
+        margin-top: 7px;
+        height: 21px;
+        width: 80px;
+        background: #084cdf;
+        color: white;
+    }
+
+    .select:hover {
+        background: #0d45a5;
+    }
+
+    .selectContainer {
+        display: flex;
+    }
+
+    .loaderContainer {
+        margin-top: 7px;
+    }
+
+    .refresh {
+        background: none;
+        border: none;
+        padding: 0;
+        margin-top: 0;
+        display: inline;
+        cursor: pointer;
+    }
+
+    .refresh img {
+        margin-left: 10px;
+        display: block;
+        width: 21px;
+    }
+
+    .refresh:hover {
+        opacity: 0.8;
+    }
+
+    textarea {
+        height: calc(100% - 108px);
+        width: calc(100% - 22px);
+        border: 0;
+        border-radius: 5px;
+        padding: 7px;
+        padding-right: 25px;
+        resize: none;
+    }
+
+    .loader {
+        margin-left: 20px;
+        margin-right: 15px;
+        border: 5px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 5px solid #3498db;
+        min-width: 11px;
+        min-height: 11px;
+        width: 11px;
+        height: 11px;
+        -webkit-animation: spin 2s linear infinite; /* Safari */
+        animation: spin 2s linear infinite;
+    }
+
+    /* Safari */
+    @-webkit-keyframes spin {
+        0% { -webkit-transform: rotate(0deg); }
+        100% { -webkit-transform: rotate(360deg); }
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 800px) {
+        .fullContainer {
+            margin: 3%;
+        }
+
+        .uploadContainer {
+            display: block;
+        }
+
+        .videoTable {
+            width: 100%;
+        }
+
+        .subtitleTable {
+            width: 100%;
+            margin-left: auto;
+            margin-top: 15px;
+        }
+    }
+</style>
+
+<body>
+{% include 'header.html' %}
+
+<div class="fullContainer">
+    <h1>{{ title }}</h1>
+
+    <div class="uploadContainer">
+        <div class="videoTable">
+            <video class="video" controls>
+                <source src="../{{ pathVideos }}/{{ filename }}.mp4" type="video/mp4">
+                <track label="Default" kind="subtitles" srclang="Default"
+                       src="../{{ pathSubtitles }}/{{ filename }}.vtt" default>
+                {% for list in languageTarget %}
+                <track label="{{ list }}" kind="subtitles" srclang="{{ list }}"
+                       src="{{ pathSubtitles }}/{{ filename }}_{{ list }}.vtt">
+                {% endfor %}
+            </video>
+        </div>
+
+        <div class="subtitleTable">
+            <label class="font">Subtitle Language</label>
+
+            <div style="display: flex;">
+                <input list="subtitleLanguageList" class="list input" name="subLang" id="subLang"
+                       autocomplete="off" value="{{ subLang }}" oninput="updateHiddenSubLang()">
+                <datalist id="subtitleLanguageList">
+                    {% for record in languageList %}
+                    <option value="{{record}}"></option>
+                    {% endfor %}
+                </datalist>
+
+                <form action="/selectSubLang" method=post enctype=multipart/form-data id="regenerate">
+                    <input type="hidden" name="filename" value="{{ filename }}"/>
+                    <input type="hidden" name="title" value="{{ title }}"/>
+                    <input type="hidden" name="oldSubLang" value="{{ subLang }}"/>
+                    <input type="hidden" name="subLang" id="hiddenSubLang" value="{{ subLang }}"/>
+                    <textarea style="display: none;" name="subtitle" id="hiddenSubtitle">{{ subtitle }}</textarea>
+                    <div class="selectContainer">
+                        <input type="submit" class="button select" value="Select" id="banButton"/>
+                        <div class="loaderContainer" style="display: none;">
+                            <div class="loader"></div>
+                            <div class="loadingText">Loading</div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div style="display: flex; margin-top: 10px;">
+                <label class="font">Generated Subtitle</label>
+
+                <form action="/refreshSubtitle" method="post" enctype=multipart/form-data id="refresh">
+                    <input type="hidden" name="filename" value="{{ filename }}"/>
+                    <input type="hidden" name="title" value="{{ title }}"/>
+                    <input type="hidden" name="subLang" value="{{ subLang }}"/>
+                    <textarea style="display: none;" name="subtitle" id="hiddenSubtitle2">{{ subtitle }}</textarea>
+                    <button class="refresh" type="submit"><img src="../{{ pathSrc }}/refresh.png"></button>
+                </form>
+
+                <label class="warning">
+                    {% for message in get_flashed_messages() %}
+                    * {{ message }}
+                    {% endfor %}
+                </label>
+            </div>
+            <textarea rows=5 class="subtitle input" name="subtitle" id="subtitle" oninput="updateHiddenSubtitle()">{{
+                    subtitle }}</textarea>
+        </div>
+    </div>
+
+    <form action="/addSub" method=post enctype=multipart/form-data>
+        <input type="hidden" name="filename" value="{{ filename }}"/>
+        <input type="hidden" name="subLang" value="{{ subLang }}"/>
+        <textarea style="display: none;" name="subtitle" id="hiddenSubtitle3">{{ subtitle }}</textarea>
+        <input type="submit" class="button" value="Done" id="banButton2"/>
+    </form>
+</div>
+
+{% include 'footer.html' %}
+</body>
+<script>
+    const banButton = document.getElementById("banButton")
+    const loader = document.querySelector('.loaderContainer');
+    const loadingText = document.querySelector('.loadingText');
+    var count = 0
+
+    const disableButton = (event) => {
+        count++;
+        buttonDisable()
+        loader.style.display = 'flex';
+    };
+
+    const disableButton2 = () => {
+        count++;
+        buttonDisable()
+    };
+
+    function buttonDisable() {
+        if (count >= 2) {
+            event.preventDefault();
+            loadingText.innerHTML = "Loading...";
+            banButton.style.cursor = "default";
+            banButton.style.color = "grey";
+            banButton.style.background = "lightgrey";
+            banButton.style.pointerEvents = "none";
+            banButton.disabled = true;
+            banButton2.style.cursor = "default";
+            banButton2.style.color = "grey";
+            banButton2.style.background = "lightgrey";
+            banButton2.style.pointerEvents = "none";
+            banButton2.disabled = true;
+        }
+    }
+
+    banButton.addEventListener('click', disableButton);
+
+    function updateHiddenSubtitle() {
+        var subtitleInput = document.getElementById('subtitle');
+        var hiddenSubtitleInput = document.getElementById('hiddenSubtitle');
+        var hiddenSubtitleInput2 = document.getElementById('hiddenSubtitle2');
+        var hiddenSubtitleInput3 = document.getElementById('hiddenSubtitle3');
+
+        hiddenSubtitleInput.value = subtitleInput.value;
+        hiddenSubtitleInput2.value = subtitleInput.value;
+        hiddenSubtitleInput3.value = subtitleInput.value;
+    }
+
+    function updateHiddenSubLang() {
+        var subLangInput = document.getElementById('subLang');
+        var hiddenSubLangInput = document.getElementById('hiddenSubLang');
+
+        hiddenSubLangInput.value = subLangInput.value;
+    }
+</script>

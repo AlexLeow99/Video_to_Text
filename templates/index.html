@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<head>
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=yes">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta name="referrer" content="no-referrer">
+    <title>SUMMAVOX AI</title>
+    <meta name="description" content="视频资料交流、下载">
+    <meta name="keywords" content="视频资料、上传下载">
+    <link rel="icon" sizes="any" href="http://www.printableparadise.com/letter-stencils/printable-letter-k-stencil.png">
+</head>
+
+<style>
+    .warning {
+        text-align: center;
+        color: red;
+    }
+
+    .place {
+        flex: 1;
+        margin: 5%;
+        margin-top: 30px;
+
+        @media (max-width: 450px) {
+            margin: 8%;
+        }
+    }
+
+    .videoList {
+        flex: 0 0 calc(25%);
+        box-sizing: border-box;
+        padding: 10px 15px;
+        width: 0;
+
+        @media (max-width: 1100px) {
+            flex: 0 0 calc(33.3%);
+        }
+        @media (max-width: 800px) {
+            flex: 0 0 calc(50%);
+        }
+        @media (max-width: 450px) {
+            flex: 0 0 calc(100%);
+        }
+    }
+
+    .videoLink {
+        width: 100%;
+        height: 100%;
+        max-height: 176px;
+        overflow: hidden;
+        border-radius: 10px;
+    }
+
+    .videoLink:hover img {
+        display: none;
+    }
+
+    .videoLink:hover video {
+        display: block;
+    }
+
+    .videoLink img, .videoLink video{
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .title {
+        margin-top: 7px;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-align: justify;
+        white-space: normal;
+    }
+
+    .videoList a {
+        color: black;
+        text-decoration: none;
+    }
+
+    .videoList label {
+        cursor: pointer;
+    }
+
+    .uploadTime {
+        font-size: 10px;
+    }
+</style>
+
+<link rel="shortcut icon" href="http://pic15.nipic.com/20110619/6731661_105306862000_2.jpg" type="image/jpg">
+
+<body>
+{% include 'header.html' %}
+
+<div class="place">
+    {% if records %}
+    <div style="display: flex; flex-wrap: wrap;">
+        {% for record in records %}
+        <div class="videoList">
+            <a href="/player/{{record['filename']}}" class="videoContent">
+                <div class="videoLink" onmouseover="playVideo(this)" onmouseout="pauseVideo(this)">
+                    <img src="{{ pathImages }}/{{record['filename']}}.png" alt="{{ record['title'] }}">
+                    <video class="video" controls>
+                        <source src="{{ pathVideos }}/{{record['filename']}}.mp4" type="video/mp4">
+                        <track label="Default" kind="subtitles" srclang="def"
+                               src="{{ pathSubtitles }}/{{record['filename']}}.vtt" default>
+                    </video>
+                </div>
+                <div style="height: 62px;">
+                    <label class="title" title="{{ record['title'] }}">{{ record['title'] }}</label>
+                    <label class="uploadTime">{{ record['date'] }}</label>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="warning">
+        <br>
+        {% for message in get_flashed_messages() %}
+        <strong>Warning!</strong> {{ message }}
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+{% include 'footer.html' %}
+</body>
+<script>
+    function playVideo(element) {
+        var video = element.querySelector('video');
+        video.play();
+        video.muted = true;
+
+        setTimeout(function() {
+
+        }, 300);
+    }
+
+    function pauseVideo(element) {
+        var video = element.querySelector('video');
+        video.pause();
+    }
+</script>

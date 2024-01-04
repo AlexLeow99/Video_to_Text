@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<head>
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=yes">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta name="referrer" content="no-referrer">
+    <title>{{ targets['title'] }}</title>
+    <meta name="description" content="视频资料交流、下载">
+    <meta name="keywords" content="视频资料、上传下载">
+    <link rel="icon" sizes="any" href="http://www.printableparadise.com/letter-stencils/printable-letter-k-stencil.png">
+</head>
+
+<style>
+    .videoContainer {
+        flex: 1;
+        margin: 75px;
+        margin-top: 45px;
+        display: flex;
+
+        @media (max-width: 1000px) {
+            margin: 7%;
+            display: block;
+        }
+    }
+
+    .mainVideoContainer{
+        width: 65%;
+        margin-right: 30px;
+
+        @media (max-width: 1000px) {
+            width: 100%;
+            margin-right: 0;
+        }
+    }
+
+    .video {
+        width: 100%;
+        max-height: 550px;
+        border-radius: 10px;
+    }
+
+    .listVideoContainer {
+        width: 35%;
+        margin-left: auto;
+
+        @media (max-width: 1000px) {
+            width: 100%;
+            margin: auto;
+        }
+    }
+
+    .videoTitle {
+        text-align: justify;
+        margin: 10px auto;
+    }
+
+    .userTable {
+        display: flex;
+        align-items: center;
+    }
+
+    .userTable img {
+        margin-right: 10px;
+        width: 40px;
+        height: 40px;
+        border: 0;
+        border-radius: 50%;
+    }
+
+    .summarizeContainer {
+        background: #F0F0F0;
+        margin-top: 15px;
+        margin-bottom: 30px;
+        padding: 14px;
+        border-radius: 10px;
+        font-size: 15px;
+    }
+
+    .summarizeBox {
+        flex: 1;
+        text-align: justify;
+        max-height: 55px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: pre-line;
+    }
+
+    .videoList {
+        display: flex;
+        margin-bottom: 15px;
+
+        @media (max-width: 1000px) {
+            margin-bottom: 20px;
+        }
+    }
+
+    .videoLink {
+        width: 40%;
+        height: 100%;
+        overflow: hidden;
+        border-radius: 10px;
+
+        @media (max-width: 1000px) {
+            margin-right: 10px;
+        }
+    }
+
+    .videoLink img{
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .information {
+        margin-top: 3px;
+        margin-left: 7px;
+        width: 60%
+    }
+
+    .title {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-align: justify;
+        white-space: normal;
+    }
+
+    .information label {
+        cursor: pointer;
+    }
+
+    .uploadTime {
+        font-size: 10px;
+    }
+
+    #toggleButton {
+        cursor: pointer;
+        color: blue;
+        margin-top: 10px;
+    }
+
+    .tag {
+        cursor: pointer;
+        color: blue;
+    }
+</style>
+
+<body>
+{% include 'header.html' %}
+
+<div class="videoContainer">
+    <div class="mainVideoContainer">
+        <video class="video" controls>
+            <source src="{{ pathVideo }}" type="video/mp4">
+            <track label="Default" kind="subtitles" srclang="Default"
+                   src="{{ pathSubtitle }}.vtt" default>
+            {% for list in languageList %}
+            <track label="{{ list }}" kind="subtitles" srclang="{{ list }}"
+                   src="{{ pathSubtitle }}_{{ list }}.vtt">
+            {% endfor %}
+        </video>
+
+        <h2 class="videoTitle">{{ targets['title'] }}</h2>
+
+        <div class="userTable">
+            <img src="../{{ pathUser }}/{{ targets['username'] }}.png" id="profilePic"/>
+            <label>{{ targets['username'] }}</label>
+        </div>
+
+        <div class="summarizeContainer">
+            <label style="font-size: 12px;"><b>Upload Time: {{ targets['date'] }}</b></label>
+            <p class="summarizeBox">{{ targets['summarize'] }}</p>
+            <b><a id="toggleButton" onclick="toggleText()" href="javascript:void(0);">Show More</a></b>
+        </div>
+    </div>
+    <div class="listVideoContainer">
+        {% for record in records %}
+        {% if targets['filename'] != record['filename'] %}
+        <div class="videoList">
+            <a href="/player/{{record['filename']}}" style="display: flex;">
+                <div class="videoLink">
+                    <img src="../{{ pathImages }}/{{ record['filename'] }}.png" alt="{{ record['title'] }}">
+                </div>
+                <div class="information">
+                    <label class="title" title="{{ record['title'] }}">{{ record['title'] }}</label>
+                    <label class="uploadTime">{{ record['date'] }}</label>
+                </div>
+            </a>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+{% include 'footer.html' %}
+</body>
+
+<script>
+    var status = "less";
+    var summarizeBox = document.querySelector(".summarizeBox");
+
+    function toggleText()
+    {
+        if (status == "less") {
+            summarizeBox.style.removeProperty("display");
+            summarizeBox.style.removeProperty("-webkit-line-clamp");
+            summarizeBox.style.removeProperty("-webkit-box-orient");
+            summarizeBox.style.maxHeight = "none";
+            summarizeBox.style.overflow = "visible";
+            document.getElementById("toggleButton").innerText = "Show Less";
+            status = "more";
+        } else if (status == "more") {
+            summarizeBox.style.display = "-webkit-box";
+            summarizeBox.style.webkitLineClamp = 3;
+            summarizeBox.style.webkitBoxOrient = "vertical";
+            summarizeBox.style.maxHeight = "55px";
+            summarizeBox.style.overflow = "hidden";
+            document.getElementById("toggleButton").innerText = "Show More";
+            status = "less"
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var paragraphs = document.querySelectorAll('p');
+
+        paragraphs.forEach(function (paragraph) {
+            if (paragraph.textContent.includes('#')) {
+                var words = paragraph.innerHTML.split(' ');
+                for (var i = 0; i < words.length; i++) {
+                    if (words[i].includes('#')) {
+                        var text = words[i].substring(0, words[i].indexOf('#'));
+                        var searchText = words[i].substring(words[i].indexOf('#') + 1);
+
+                        words[i] = text + '<form action="/" method=post enctype=multipart/form-data id="searchForm' + i + '">'
+                                    + '<input type="hidden" name="searchBox" value="' + searchText + '">'
+                                    + '</form>'
+                                    + '<a href="javascript:void(0);" class="tag" onclick="updateSearchTerm(' + "'" + i + "'" + ')">#' + searchText + '</a>';
+                    }
+                }
+                paragraph.innerHTML = words.join(' ');
+            }
+        });
+    });
+
+    function updateSearchTerm(term) {
+        document.getElementById('searchForm'+term).submit();
+    }
+</script>

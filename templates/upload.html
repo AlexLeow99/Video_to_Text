@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<head>
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=yes">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta name="referrer" content="no-referrer">
+    <title>Upload</title>
+    <meta name="description" content="视频资料上传">
+    <meta name="keywords" content="视频资料上传">
+    <link rel="icon" sizes="any" href="http://www.printableparadise.com/letter-stencils/printable-letter-k-stencil.png">
+</head>
+
+<style>
+    .warning {
+        color: red;
+    }
+
+    .uploadContainer {
+        flex: 1;
+        margin: 75px;
+        margin-top: 15px;
+
+        @media (max-width: 500px) {
+            margin: 15px;
+        }
+    }
+
+    .drop-container {
+        position: relative;
+        display: flex;
+        gap: 10px;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 200px;
+        padding: 20px;
+        border-radius: 10px;
+        border: 2px dashed #555;
+        color: #444;
+        cursor: pointer;
+        transition: background .2s ease-in-out, border .2s ease-in-out;
+    }
+
+    .drop-container:hover,
+    .drop-container.drag-active {
+        background: #eee;
+        border-color: #111;
+    }
+
+    .drop-container:hover .drop-title,
+    .drop-container.drag-active .drop-title {
+      color: #222;
+    }
+
+    .drop-title {
+        color: #444;
+        font-size: 20px;
+        font-weight: bold;
+        text-align: center;
+        transition: color .2s ease-in-out;
+    }
+
+    input[type=file] {
+        width: 350px;
+        max-width: 100%;
+        color: #444;
+        padding: 5px;
+        background: #fff;
+        border-radius: 10px;
+        border: 1px solid #555;
+    }
+
+    input[type=file]::file-selector-button {
+        margin-right: 20px;
+        border: none;
+        background: #084cdf;
+        padding: 10px 20px;
+        border-radius: 10px;
+        color: #fff;
+        cursor: pointer;
+        transition: background .2s ease-in-out;
+    }
+
+    input[type=file]::file-selector-button:hover {
+        background: #0d45a5;
+    }
+
+    td {
+        padding: 5px;
+        padding-right: 20px;
+    }
+
+    h1 {
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .font {
+        padding-top: 20px;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 17px;
+    }
+
+    .list {
+        height: 25px;
+        width: 100%;
+        max-width: 200px;
+        border: 0;
+        border-radius: 5px;
+        padding-left: 7px;
+    }
+
+    .button {
+        height: 35px;
+        width: 130px;
+        border: 0;
+        border-radius: 20px;
+        background: #00E44C;
+        cursor: pointer;
+        transition: background .2s ease-in-out;
+        font-weight: bold;
+    }
+
+    .button:hover {
+        background: #00C040;
+    }
+
+    .surprise {
+        margin-top: 10px;
+        background: #FC0000;
+        color: white;
+    }
+
+    .surprise:hover {
+        background: #D40000;
+    }
+
+    .buttonContainer {
+        margin-top: 10px;
+        display: flex;
+    }
+
+    .loader {
+        margin-left: 20px;
+        margin-right: 15px;
+        border: 8px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 8px solid #3498db;
+        min-width: 19px;
+        min-height: 19px;
+        width: 19px;
+        height: 19px;
+        -webkit-animation: spin 2s linear infinite; /* Safari */
+        animation: spin 2s linear infinite;
+    }
+
+    .loadingText {
+        margin-top: 4px;
+    }
+
+    /* Safari */
+    @-webkit-keyframes spin {
+        0% { -webkit-transform: rotate(0deg); }
+        100% { -webkit-transform: rotate(360deg); }
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+
+<body>
+{% include 'header.html' %}
+
+<div class="warning">
+    {% for message in get_flashed_messages() %}
+    <br>
+    <strong>Warning!</strong> {{ message }}
+    {% endfor %}
+</div>
+
+<div class="uploadContainer">
+    <h1>Upload Video</h1>
+
+    <form action="/upload" method=post enctype=multipart/form-data>
+        <label for="file" class="drop-container" id="dropcontainer">
+            <span class="drop-title">Drop video here</span>
+            or
+            <input type="file" name="file" id="file" accept="video/*">
+        </label>
+        <br>
+        <table>
+            <tr>
+                <td><label for="languages" class="font">Video Language</label></td>
+                <td>
+                    <input list="languageList" class="list" name="languages" id="languages" autocomplete="off"
+                           placeholder="Select a Video Language">
+                    <datalist id="languageList">
+                        <option value="Auto-Detect">
+                            {% for record in languageList %}
+                        <option value="{{record}}">
+                            {% endfor %}
+                    </datalist>
+                </td>
+            </tr>
+            <tr>
+                <td><label for="models" class="font">Subtitle Model</label></td>
+                <td>
+                    <input list="modelList" class="list" name="models" id="models" autocomplete="off"
+                           placeholder="Select a Subtitle Model">
+                    <datalist id="modelList">
+                        <option value="tiny">
+                        <option value="base">
+                        <option value="small">(Recommended)</option>
+                        <option value="medium">
+                        <option value="large-v1">
+                        <option value="large-v2">
+                    </datalist>
+                </td>
+            </tr>
+        </table>
+        <div class="buttonContainer">
+            <input type="submit" class="button" value="Upload" id="banButton"/>
+            <div class="loaderContainer" style="display: none;">
+                <div class="loader"></div>
+                <div class="loadingText">Subtitle and summary are being generated for you.</div>
+            </div>
+        </div>
+    </form>
+    <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank">
+        <button class="button surprise" id="surprise" style="display: none;">Surprise</button>
+    </a>
+    <a href="https://www.youtube.com/watch?v=6vyESaW1GO4" target="_blank">
+        <button class="button surprise" id="surprise2" style="display: none;">Surprise</button>
+    </a>
+    <a href="https://www.youtube.com/watch?v=ZZ5LpwO-An4" target="_blank">
+        <button class="button surprise" id="surprise3" style="display: none;">Surprise</button>
+    </a>
+</div>
+
+{% include 'footer.html' %}
+</body>
+
+<script>
+    const banButton = document.getElementById("banButton")
+    const loader = document.querySelector('.loaderContainer');
+    const loadingText = document.querySelector('.loadingText');
+    var count = 0
+    const surprise = document.getElementById("surprise")
+    const surprise2 = document.getElementById("surprise2")
+    const surprise3 = document.getElementById("surprise3")
+
+    const disableButton = () => {
+        count++;
+        buttonDisable()
+        loader.style.display = 'flex';
+    };
+
+    banButton.addEventListener('click', disableButton);
+
+    function buttonDisable() {
+        if (count == 2) {
+            event.preventDefault();
+            loadingText.innerHTML = "Subtitle and summary are being generated for you, please wait.";
+            delay()
+        }
+        else if (count == 3) {
+            loadingText.innerHTML = "Subtitle and summary are being generated for you, please wait patiently.";
+            delay()
+        }
+        else if (count == 4) {
+            loadingText.innerHTML = "Just wait a minute, it's almost ready.";
+            delay()
+        }
+        else if (count == 5) {
+            loadingText.innerHTML = "...";
+            delay()
+        }
+        else if (count == 6) {
+            loadingText.innerHTML = "... ...";
+            delay()
+        }
+        else if (count == 7) {
+            loadingText.innerHTML = "... ... ...";
+            delay()
+        }
+        else if (count == 8) {
+            loadingText.innerHTML = "Looks like we have to wait for a long time.";
+            delay()
+        }
+        else if (count == 9) {
+            loadingText.innerHTML = "Ermmm, good morning.";
+            delay()
+        }
+        else if (count == 10) {
+            loadingText.innerHTML = "Maybe it's not morning now.";
+            delay()
+        }
+        else if (count == 11) {
+            loadingText.innerHTML = "Did you forget what to do?";
+            delay()
+        }
+        else if (count == 12) {
+            loadingText.innerHTML = "Like your mother told you to go to the refrigerator to take out the meat and defrost it.";
+            delay()
+        }
+        else if (count == 13) {
+            loadingText.innerHTML = "Have you eaten?";
+            delay()
+        }
+        else if (count == 14) {
+            loadingText.innerHTML = "Staying up late is not good. If it's late at night, go to bed quickly.";
+            delay()
+        }
+        else if (count == 15) {
+            loadingText.innerHTML = "Are you curious why there is no progress bar?";
+            delay()
+        }
+        else if (count == 16) {
+            loadingText.innerHTML = "Because I don’t want to write it down, lazy.";
+            delay()
+        }
+        else if (count == 17) {
+            loadingText.innerHTML = "It's too much trouble to type a bunch of code, so I just write this nonsense.";
+            delay()
+        }
+        else if (count == 18) {
+            loadingText.innerHTML = "It seems that the summary has not been generated yet.";
+            delay()
+        }
+        else if (count == 19) {
+            delay()
+            surprise.style.display = '';
+            loadingText.innerHTML = "Let me give you a surprise, click in and take a look.";
+        }
+        else if (count == 20) {
+            loadingText.innerHTML = "If you don't click in, it will disappear later.";
+            delay()
+        }
+        else if (count == 21) {
+            delay()
+            surprise.style.display = 'none';
+            loadingText.innerHTML = "Okay, gone.";
+        }
+        else if (count == 22) {
+            loadingText.innerHTML = "How does it feel?";
+            delay()
+        }
+        else if (count == 23) {
+            loadingText.innerHTML = "Am I a liar? How could I lie? This was obviously a surprise.";
+            delay()
+        }
+        else if (count == 24) {
+            loadingText.innerHTML = "Do you not like it? Let me give you another surprise.";
+            delay()
+        }
+        else if (count == 25) {
+            loadingText.innerHTML = "You don't want it? Okay, I won't give it to you";
+            delay()
+        }
+        else if (count == 26) {
+            surprise2.style.display = '';
+            loadingText.innerHTML = "So let's continue our topic.";
+            setTimeout(function() {
+                surprise2.style.display = 'none';
+            }, 500);
+            delay()
+        }
+        else if (count == 27) {
+            loadingText.innerHTML = "Did you say you saw something flash by?";
+            delay()
+        }
+        else if (count == 28) {
+            loadingText.innerHTML = "You want to click in?.";
+            delay()
+        }
+        else if (count == 29) {
+            loadingText.innerHTML = "Next time your hand speed should be faster, hehe.";
+            delay()
+        }
+        else if (count == 30) {
+            loadingText.innerHTML = "It seems like it's still being generated.";
+            delay()
+        }
+        else if (count == 31) {
+            loadingText.innerHTML = "Are you uploading videos longer than an hour?";
+            delay()
+        }
+        else if (count == 32) {
+            loadingText.innerHTML = "You want to roast my server?!?!";
+            delay()
+        }
+        else if (count == 33) {
+            loadingText.innerHTML = "Just kidding, it seems we have to wait a little longer, it should be almost done.";
+            delay()
+        }
+        else if (count == 34) {
+            loadingText.innerHTML = ". . .";
+            delay()
+        }
+        else if (count == 35) {
+            loadingText.innerHTML = "I seem to have run out of ideas for what to write.";
+            delay()
+        }
+        else if (count == 36) {
+            loadingText.innerHTML = "It seems that is all that can be said.";
+            delay()
+        }
+        else if (count == 37) {
+            loadingText.innerHTML = "I wish you have a wonderful day and good health.";
+            delay()
+        }
+        else if (count == 38) {
+            loadingText.innerHTML = "And give birth to a child early.";
+            delay()
+        }
+        else if (count == 39) {
+            loadingText.innerHTML = "Just kidding.";
+            delay()
+        }
+        else if (count >= 40) {
+            loadingText.innerHTML = "Okay, that’s it for now, I wish you a nice day.";
+            banButton.style.cursor = "default";
+            banButton.style.color = "grey";
+            banButton.style.background = "lightgrey";
+            banButton.style.pointerEvents = "none";
+            banButton.disabled = true;
+            setTimeout(function() {
+                surprise3.style.display = '';
+            }, 10000);
+        }
+    }
+
+    function delay() {
+        banButton.style.pointerEvents = "none";
+        banButton.disabled = true;
+        setTimeout(function() {
+            banButton.style.pointerEvents = "";
+            banButton.disabled = false;
+        }, 500);
+    }
+
+    const dropContainer = document.getElementById("dropcontainer")
+    const fileInput = document.getElementById("file")
+
+    dropContainer.addEventListener("dragover", (e) => {
+        // prevent default to allow drop
+        e.preventDefault()
+    }, false)
+
+    dropContainer.addEventListener("dragenter", () => {
+        dropContainer.classList.add("drag-active")
+    })
+
+    dropContainer.addEventListener("dragleave", () => {
+        dropContainer.classList.remove("drag-active")
+    })
+
+    dropContainer.addEventListener("drop", (e) => {
+        e.preventDefault()
+        dropContainer.classList.remove("drag-active")
+
+        if (e.dataTransfer.files.length !== 1) {
+            alert("Only one video can be dragged in!");
+            return;
+        }
+
+        const droppedFile = e.dataTransfer.files[0];
+
+        if (!droppedFile.type.startsWith("video/")) {
+            alert("Must be in video format!");
+            return;
+        }
+
+        fileInput.files = e.dataTransfer.files
+    })
+</script>

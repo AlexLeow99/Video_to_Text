@@ -1,0 +1,231 @@
+<style>
+    body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        margin: auto;
+        max-width: 1600px;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    header {
+        background-color: black;
+        padding: 10px 20px;
+        display: flex;
+        position: -webkit-sticky;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    .logo {
+        height: 50px;
+        @media (max-width: 900px) {
+            content: url('../{{ pathSrc }}/logo2.png');
+        }
+    }
+
+    input, textarea {
+        background: #EBEBEB;
+    }
+
+    .searchBox {
+        margin-top: 10px;
+        margin-left: 30px;
+        height: 30px;
+        width: 100%;
+        max-width: 500px;
+        padding-left: 10px;
+        border: 0;
+        border-radius: 50px 0 0 50px;
+    }
+
+    .searchBtn {
+        margin-top: 10px;
+        margin-right: 30px;
+        height: 32px;
+        width: 40px;
+        border: 0;
+        border-radius: 0 50px 50px 0;
+        cursor: pointer;
+    }
+
+    .searchBtn:hover {
+        background-color: lightgrey;
+        transition: 0.5s;
+    }
+
+    .searchIcon {
+        margin-top: 3px;
+        height: 18px;
+    }
+
+    .pic {
+        height: 30px;
+        margin-top: 10px;
+    }
+
+    .login {
+        margin: auto;
+        margin-right: 0;
+    }
+
+    .loginBtn {
+        border: 0;
+        border-radius: 5px;
+        height: 30px;
+        width: 80px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background .2s ease-in-out;
+    }
+
+    .loginBtn:hover {
+        background: #CBCBCB;
+    }
+
+    .profile {
+        margin: auto;
+        margin-right: 0;
+        cursor: pointer;
+    }
+
+    .profileTable {
+        display: none;
+        cursor: default;
+    }
+
+    .profile:hover .profileTable{
+        position: absolute;
+        display: block;
+        margin-top: 0px;
+        padding-top: 10px;
+        z-index: 1;
+        right: 0;
+    }
+
+    .profile-details {
+        background-color: #f0f0f0;
+        border: 0;
+        border-radius: 10px;
+        padding: 5px 0;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    a {
+        color: black;
+        text-decoration: none;
+    }
+
+    .pl0:hover, .pl1:hover, .pl2:hover, .pl3:hover, .pl4:hover {
+        background-color: grey;
+        cursor: pointer;
+    }
+
+    .profileList {
+        padding: 5px 20px;
+    }
+
+    .proPic {
+        margin-right: 7px;
+        width: 40px;
+        height: 40px;
+        border: 0;
+        border-radius: 50%;
+    }
+
+    .proName {
+        margin: auto;
+        cursor: pointer;
+        width: 80px;
+    }
+</style>
+
+<header>
+    <a href="../">
+        <img src="../{{ pathSrc }}/logo.png" class="logo" alt="Video之家"/>
+    </a>
+
+    <input type="text" class="searchBox" name="searchBox" id="searchBox" value="{{ search }}" placeholder="Search"
+           oninput="updateHiddenSearch()"/>
+
+    <form action="{{ url_for('index') }}" method="POST" id="searchForm">
+        <input type="text" style="display: none;" name="searchBox" id="hiddenSearchBox" value="{{ search }}"/>
+        <button class="searchBtn">
+            <img src="../{{ pathSrc }}/search.png" class="searchIcon" alt="Search"/>
+        </button>
+    </form>
+
+    {% if not user %}
+    <a href='/login' class="login">
+        <button class="loginBtn">Login</button>
+    </a>
+    {% else %}
+    <div class="profile">
+        <a href="../profile" class="profileLink">
+            <img src="../{{ pathUser }}/{{ user }}.png" class="proPic" alt="Profile Picture"/>
+        </a>
+
+        <div class="profileTable">
+            <div class="profile-details">
+                <a href="../profile">
+                    <div class="profileList pl0">Profile</div>
+                </a>
+                <a href="../upload">
+                    <div class="profileList pl1">Upload Video</div>
+                </a>
+                <a href="../youtube">
+                    <div class="profileList pl2">Upload YouTube Video</div>
+                </a>
+                <a href="../manageVideo">
+                    <div class="profileList pl3">Manage Video</div>
+                </a>
+                <form action="/logout" method=post enctype=multipart/form-data>
+                    <div style="color: red;" class="profileList pl4" id="logout">Logout</div>
+                    <button style="display: none;" id="log_out"></button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</header>
+
+<script>
+    function updateHiddenSearch(){
+        var searchInput = document.getElementById('searchBox');
+        var hiddenSearchInput = document.getElementById('hiddenSearchBox');
+
+        hiddenSearchInput.value = searchInput.value;
+    }
+
+    document.getElementById('logout').addEventListener('click', function () {
+        document.getElementById('log_out').click();
+    });
+
+    document.getElementById('searchBox').addEventListener('keypress', function (event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            document.getElementById('searchForm').submit();
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const profileLink = document.querySelector('.profileLink');
+
+        if (profileLink) {
+            window.addEventListener('resize', function () {
+                if (window.innerWidth <= 500) {
+                    profileLink.href = '#';
+                } else {
+                    profileLink.href = '../profile';
+                }
+            });
+
+            // 初始加载时进行一次检查
+            if (window.innerWidth <= 500) {
+                profileLink.href = '#';
+            }
+        }
+    });
+</script>

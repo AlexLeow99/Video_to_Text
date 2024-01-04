@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<head>
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=yes">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta name="referrer" content="no-referrer">
+    <title>Profile</title>
+    <meta name="description" content="视频资料交流、下载">
+    <meta name="keywords" content="视频资料、上传下载">
+    <link rel="icon" sizes="any" href="http://www.printableparadise.com/letter-stencils/printable-letter-k-stencil.png">
+    <link rel="stylesheet" href="https://unpkg.com/cropperjs/dist/cropper.css">
+</head>
+
+<style>
+    .profile_table {
+        flex: 1;
+        margin: auto;
+        margin-top: 45px;
+        display: flex;
+        position: relative;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .profile_table img {
+        width: 200px;
+        height: 200px;
+        border: 0;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+
+    .cropTable {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        z-index: 3;
+    }
+
+    .cropUpload {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #croppingImg {
+        height: 300px;
+    }
+
+    .button {
+        margin-top: 20px;
+        height: 35px;
+        width: 50%;
+        max-width: 200px;
+        border: 0;
+        border-radius: 20px;
+        background: #00E44C;
+        cursor: pointer;
+        transition: background .2s ease-in-out;
+        font-weight: bold;
+    }
+
+    .button:hover {
+        background: #00C040;
+    }
+
+    #cancelCrop {
+        margin-top: 10px;
+        background: #FC0000;
+        color: white;
+    }
+
+    #cancelCrop:hover {
+        background: #D40000;
+    }
+
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5); /* 半透明黑色 */
+        z-index: 2;
+        display: none;
+    }
+</style>
+
+<body>
+{% include 'header.html' %}
+
+<div class="profile_table">
+    <img src="../{{ pathUser }}/{{ user }}.png" id="profilePic"/>
+    <input type="file" id="inputImage" accept="image/*" style="display: none;">
+    <h1>{{ user }}</h1>
+    <button style="cursor:pointer;" id="downloadLink" onclick="downloadPackage()">启动</button>
+    <audio id="audioElement">
+        <source src="../{{ pathSrc }}/启动.mp3" type="audio/mp3">
+        Your browser does not support the audio element.
+    </audio>
+</div>
+
+<div class="overlay" id="overlay" onclick="hideCropTable()"></div>
+
+<div class="cropTable" id="cropTable">
+    <form action="/profile" method=post enctype=multipart/form-data class="cropUpload">
+        <img name="croppingImg" id="croppingImg"/>
+    </form>
+    <button class="button" id="cropButton">Crop</button>
+    <button class="button" id="cancelCrop">Cancel</button>
+</div>
+
+{% include 'footer.html' %}
+</body>
+
+<script src="https://unpkg.com/cropperjs/dist/cropper.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const inputImage = document.getElementById('inputImage');
+        const croppedImage = document.getElementById('profilePic');
+        const cropTable = document.getElementById('cropTable');
+        const croppingImg = document.getElementById('croppingImg');
+        const cropButton = document.getElementById('cropButton');
+        const cancelCrop = document.getElementById('cancelCrop');
+        const overlay = document.getElementById('overlay');
+        let cropper;
+
+        croppedImage.addEventListener('click', function () {
+            inputImage.click();
+        });
+
+        inputImage.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    if (cropper) {
+                        cropper.destroy();
+                    }
+
+                    croppingImg.src = e.target.result;
+                    cropTable.style.display = 'flex';
+                    overlay.style.display = 'block';
+                    cropper = new Cropper(croppingImg, {
+                        aspectRatio: 1,
+                        viewMode: 1,
+                    });
+                };
+
+                reader.readAsDataURL(file);
+            }
+        });
+
+        cropButton.addEventListener('click', function () {
+            if (cropper) {
+                const croppedDataUrl = cropper.getCroppedCanvas().toDataURL();
+                croppedImage.src = croppedDataUrl;
+                cropTable.style.display = 'none';
+                overlay.style.display = 'none';
+                inputImage.value = null;
+                cropper.destroy();
+
+                // Submit the form with the cropped image data
+                const formData = new FormData(document.querySelector('.cropUpload'));
+                formData.append('croppedImage', croppedDataUrl);
+
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '/profile', true);
+
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                        console.log('Image data uploaded successfully');
+                    }
+                };
+
+                xhr.send(formData);
+            }
+        });
+
+        cancelCrop.addEventListener('click', function () {
+            cropTable.style.display = 'none';
+            overlay.style.display = 'none';
+            inputImage.value = null;
+            cropper.destroy();
+        });
+    });
+
+    function downloadPackage() {
+        var androidPackageUrl = 'https://ys-api.mihoyo.com/event/download_porter/link/ys_cn/official/android_default';
+        var iOSPackageUrl = 'https://ys-api.mihoyo.com/event/download_porter/link/ys_cn/official/ios_default';
+        var pcPackageUrl = 'https://ys-api.mihoyo.com/event/download_porter/link/ys_cn/official/pc_default';
+        var audioElement = document.getElementById('audioElement');
+
+        if (audioElement.paused) {
+            audioElement.play();
+        }
+
+        if (/Win|Mac|Linux/.test(navigator.platform) && !/Android|iPhone|iPad|iPod/.test(navigator.userAgent)) {
+            window.location.href = pcPackageUrl;
+        }
+        else if (/Android/.test(navigator.userAgent)) {
+            window.location.href = androidPackageUrl;
+        }
+        else if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+            window.location.href = iOSPackageUrl;
+        }
+
+        document.getElementById('downloadLink').click();
+    }
+</script>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<head>
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=yes">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta name="referrer" content="no-referrer">
+    <title>Login</title>
+    <meta name="description" content="视频资料交流、下载">
+    <meta name="keywords" content="视频资料、上传下载">
+    <link rel="icon" sizes="any" href="http://www.printableparadise.com/letter-stencils/printable-letter-k-stencil.png">
+</head>
+
+<style>
+    .warning {
+        text-align: center;
+        color: red;
+    }
+
+    .loginTable {
+        width: 100%;
+        max-width: 300px;
+        margin: auto;
+        margin-top: 50px;
+        padding: 30px;
+        padding-top: 7px;
+        border: 0;
+        border-radius: 10px;
+        background: #D5D5D5;
+    }
+
+    .loginInput {
+        height: 30px;
+        width: 100%;
+        margin-top: 7px;
+        margin-bottom: 15px;
+        border: 0;
+        border-radius: 5px;
+    }
+
+    .button {
+        margin-top: 10px;
+        height: 35px;
+        width: 100%;
+        border: 0;
+        border-radius: 20px;
+        background: #00E44C;
+        cursor: pointer;
+        transition: background .2s ease-in-out;
+        font-weight: bold;
+    }
+
+    .button:hover {
+        background: #00C040;
+    }
+
+    .regBtn {
+        background: #FC0000;
+        color: white;
+    }
+
+    .regBtn:hover {
+        background: #D40000;
+    }
+</style>
+
+<body>
+{% include 'header.html' %}
+
+<div class="warning">
+    <br>
+    {% for message in get_flashed_messages() %}
+    <strong>Warning!</strong> {{ message }}
+    {% endfor %}
+</div>
+
+<div class="loginTable">
+    <form action="/login" method=post enctype=multipart/form-data>
+        <h2>Login</h2>
+        <label>Username</label>
+        <input type="text" class="loginInput" name="username" value="{{ username }}" required />
+        <label>Password</label><br>
+        <input type="password" class="loginInput" name="password" required />
+        <button class="button">Sign In</button>
+    </form>
+
+    <a href="/register"><button class="button regBtn">Register</button></a>
+</div>
+
+{% include 'footer.html' %}
+</body>

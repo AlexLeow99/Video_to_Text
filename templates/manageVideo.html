@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<head>
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=yes">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta name="referrer" content="no-referrer">
+    <title>Manage Video</title>
+    <meta name="description" content="视频资料交流、下载">
+    <meta name="keywords" content="视频资料、上传下载">
+    <link rel="icon" sizes="any" href="http://www.printableparadise.com/letter-stencils/printable-letter-k-stencil.png">
+</head>
+
+<style>
+    .warning {
+        text-align: center;
+        color: red;
+    }
+
+    .place {
+        flex: 1;
+        margin: auto;
+        margin-top: 30px;
+        padding: 0 20px;
+
+        @media (max-width: 450px) {
+            margin: 7%;
+            padding: 0;
+        }
+    }
+
+    .videoList {
+        margin: auto;
+        display: flex;
+    }
+
+    .manageImg {
+        width: 30%;
+        max-width: 200px;
+        overflow: hidden;
+        border-radius: 10px;
+    }
+
+    .manageImg img{
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .titleTable {
+        margin-left: 10px;
+        width: 50%;
+        max-width: 400px;
+    }
+
+    .title {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-align: justify;
+        white-space: normal;
+
+        @media (max-width: 450px) {
+            font-size: 14px;
+        }
+    }
+
+    .uploadTime {
+        font-size: 10px;
+    }
+
+    .buttonTable {
+        margin: auto;
+        margin-left: 20px;
+    }
+
+    .button {
+        height: 25px;
+        width: 100%;
+        min-width: 70px;
+        border: 0;
+        border-radius: 20px;
+        background: #00E44C;
+        cursor: pointer;
+        transition: background .2s ease-in-out;
+        font-weight: bold;
+    }
+
+    .button:hover {
+        background: #00C040;
+    }
+
+    .subBtn {
+        margin-top: 5px;
+        background: #41ADFF;
+    }
+
+    .subBtn:hover {
+        background: #0080FF;
+    }
+
+    .deleteBtn {
+        margin-top: 5px;
+        background: #FC0000;
+        color: white;
+    }
+
+    .deleteBtn:hover {
+        background: #D40000;
+    }
+</style>
+
+<body>
+{% include 'header.html' %}
+
+<div class="place">
+    {% if targets %}
+    {% set count = 0 %}
+    {% for target in targets %}
+    {% set count = loop.index %}
+    <div class="videoList">
+        <div class="manageImg">
+            <img src="{{ pathImages }}/{{ target['filename'] }}.png" alt="{{ target['title'] }}">
+        </div>
+        <div class="titleTable">
+            <label class="title" id="title{{ count }}" title="{{ target['title'] }}">{{ target['title'] }}</label>
+            <label class="uploadTime">{{ target['date'] }}</label>
+        </div>
+        <div class="buttonTable">
+            <form action="/manageVideo" method=post enctype=multipart/form-data>
+                <input type="hidden" name="filename" value="{{ target['filename'] }}"/>
+                <button class="button">Edit</button>
+            </form>
+            <form action="/addSubtitle" method=post enctype=multipart/form-data>
+                <input type="hidden" name="filename" value="{{ target['filename'] }}"/>
+                <button class="button subBtn">Subtitle</button>
+            </form>
+            <form action="/delete" method=post enctype=multipart/form-data>
+                <input type="hidden" name="filename" value="{{ target['filename'] }}"/>
+                <button style="display: none;" id="hiddenDeleteBtn{{ count }}"></button>
+            </form>
+            <button class="button deleteBtn" id="deleteBtn{{ count }}">Delete</button>
+        </div>
+    </div>
+    <hr>
+    {% endfor %}
+    {% else %}
+    <div class="warning">
+        <br>
+        {% for message in get_flashed_messages() %}
+        <strong>Warning!</strong> {{ message }}
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+{% include 'footer.html' %}
+</body>
+
+<script>
+    {% set count = 0 %}
+    {% for target in targets %}
+    {% set count = loop.index %}
+    document.getElementById('deleteBtn{{ count }}').addEventListener('click', function () {
+        var title = document.getElementById('title{{ count }}');
+        var isConfirmed = confirm('Are you sure you want to delete ' + title.innerHTML + '?');
+
+        if (isConfirmed) {
+            document.getElementById('hiddenDeleteBtn{{ count }}').click();
+        }
+    });
+    {% endfor %}
+</script>

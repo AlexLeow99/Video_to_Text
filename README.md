@@ -55,3 +55,12 @@ WebVid2Text is a robust AI-driven system designed for efficient video content pr
     ngrok http 5000
     ```
 
+## Acknowledgements
+
+Special thanks to the following authors and their projects:
+
+- [xtekky/gpt4free](https://github.com/xtekky/gpt4free): The official gpt4free repository | various collection of powerful language models.
+
+- [Carleslc/AudioToText](https://github.com/Carleslc/AudioToText): Transcribe and translate audio to text using Whisper and DeepL.
+
+I express my gratitude to these authors for their valuable contributions to the open-source community.
